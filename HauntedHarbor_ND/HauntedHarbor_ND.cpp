@@ -3,6 +3,8 @@
 
 #include "framework.h"
 #include "HauntedHarbor_ND.h"
+#include "Drawable.h"
+#include "Player.h"
 
 #define MAX_LOADSTRING 100
 
@@ -10,6 +12,15 @@
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+
+// GAME VARIABLES
+Player* Vic = new Player(100, 100);
+Drawable* bg = new Drawable("Background.jpg", 0, 0, 700, 550);
+Drawable* ground = new Drawable("Ground.bmp", 0, GROUND, 774, 128);
+
+// GAME LISTS
+
+// CONTROL VARIABLES
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -56,12 +67,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 }
 
 
-
-//
-//  FUNCTION: MyRegisterClass()
-//
-//  PURPOSE: Registers the window class.
-//
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
     WNDCLASSEXW wcex;
@@ -83,27 +88,19 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     return RegisterClassExW(&wcex);
 }
 
-//
-//   FUNCTION: InitInstance(HINSTANCE, int)
-//
-//   PURPOSE: Saves instance handle and creates main window
-//
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-//
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // Store instance handle in our global variable
 
    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+      250, 200, 700, 550, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
       return FALSE;
    }
+
+   SetTimer(hWnd, 1, 17, NULL);
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
@@ -111,16 +108,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
-//
-//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  PURPOSE: Processes messages for the main window.
-//
-//  WM_COMMAND  - process the application menu
-//  WM_PAINT    - Paint the main window
-//  WM_DESTROY  - post a quit message and return
-//
-//
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
@@ -142,11 +129,92 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+    case WM_KEYDOWN:
+    {
+        switch (wParam) {
+        case 0x53:
+           
+            break;
+        }
+        switch (wParam) {
+        case 0x57:
+            Vic->yspeed = -PSPEED * 2;
+            break;
+        }
+        switch (wParam) {
+        case 0x41:
+            Vic->xspeed = -PSPEED;
+            break;
+        }
+        switch (wParam) {
+        case 0x44:
+            Vic->xspeed = PSPEED;
+            break;
+        }
+    }
+    break;
+    case WM_KEYUP:
+    {
+        switch (wParam) {
+        case 0x53: 
+
+            break;
+        }
+        switch (wParam) {
+        case 0x57:
+            Vic->yspeed = -PSPEED * 2;
+            break;
+        }
+        switch (wParam) {
+        case 0x41:
+            Vic->xspeed = 0;
+            break;
+        }
+        switch (wParam) {
+        case 0x44:
+            Vic->xspeed = 0;
+            break;
+        }
+    }
+    break;
+    case WM_MOUSEMOVE:
+    {
+        POINT p;
+        if(GetCursorPos(&p))
+            if (ScreenToClient(hWnd, &p)) {  //Ripping postion from screen (cursor)
+                //drawable ->x = p.x;
+                //drawable->y = p.y;
+            }
+          
+    }
+    break;
+    case WM_RBUTTONUP:
+    {
+
+    }
+    break;
+    case WM_LBUTTONUP: 
+    {
+
+    }
+    break;
+    case WM_TIMER:
+    {
+
+        //ADD ABOVE THIS LINE
+        PostMessage(hWnd, WM_PAINT, 0, 0);
+    }
+    break;
     case WM_PAINT:
-        {
+        { 
+            Vic->update();
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: Add any drawing code that uses hdc here...
+            HDC context = GetDC(hWnd);
+            bg->draw(context);
+            ground->draw(context);
+            Vic->draw(context);
             EndPaint(hWnd, &ps);
         }
         break;
