@@ -7,6 +7,7 @@
 #include "Player.h"
 #include "Background.h"
 #include "Box.h"
+#include "Platform.h"
 
 #define MAX_LOADSTRING 100
 
@@ -22,6 +23,7 @@ Background* ground = new Background("Ground.bmp", 0, GROUND, 774, 128, 1.2);
 
 // GAME LISTS
 list<Box*> boxes;
+list<Platform*> platforms;
 
 // CONTROL VARIABLES
 HDC buffer_context;
@@ -116,10 +118,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    for (int i = 0; i < 5; i++) boxes.add(new Box("Crate.bmp", 200 + i * 64, GROUND - 64, 64, 64));
    //Small Boxes
    for (int i = 0; i < 5; i++) boxes.add(new Box("SmallCrate.bmp", 650 + i * 32, GROUND - 32 - i * 32, 32, 32));
-
+   //Platforms
+   platforms.add(new Platform(400, 200, 3));
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
-
    return TRUE;
 }
 
@@ -153,7 +155,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         switch (wParam) {
         case 0x57:
-            Vic->yspeed = -PSPEED * 2;
+            if(Vic->grounded || Vic->landed) Vic->yspeed = -PSPEED * 2;
             break;
         }
         switch (wParam) {
@@ -228,13 +230,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     break;
     case WM_PAINT:
         { 
-            Vic->update();
+            Vic->update(boxes);
+            for (Platform* p : platforms) p->update();
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: Add any drawing code that uses hdc here...
             bg->draw(buffer_context);
             ground->draw(buffer_context);
             for (Box* b : boxes) b->draw(buffer_context);
+            for (Platform* p : platforms) p->draw_boxes(buffer_context);
             Vic-> draw_bullets(buffer_context);
             Vic->draw(buffer_context);
             draw_buffer(hWnd);
