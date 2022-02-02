@@ -11,5 +11,6 @@ public:
 	void draw_bullets(HDC context);
 	void update_bullets();
 	void clear_inactive_bullets();
+	void bullet_collision(Drawable* d);
 };
 

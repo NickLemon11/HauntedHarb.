@@ -1,7 +1,10 @@
 #include "Player.h"
 
-Player::Player(int x, int y) : Combat("ViktorTesla.bmp", x, y, 55, 46)
+Player::Player(int x, int y) : Combat("ViktorTesla.bmp", x, y, 54, 42)
 {
+	durability = 3;
+	php = durability;
+	
 }
 
 void Player::move()
@@ -10,41 +13,61 @@ void Player::move()
 	py = y;
 	x += xspeed;
 	y += yspeed;
+	plx = x;
 	facing_right = xspeed != 0 ? xspeed > 0 ? true : false : facing_right;
 	if (!grounded && !landed) yspeed += GRAVITY;
 	if (grounded = y + h > GROUND) y = GROUND - h;
+	if ((x - mpos < 100 && xspeed  !=0) ||  (x - mpos > 550 && xspeed !=0)) mpos += xspeed;  
+	lineout("Player's adjusted position is: " << x - mpos);
 
-	if ((x - mpos < 100 && xspeed != 0) || (x - mpos > 550 && xspeed != 0)) mpos += xspeed;  
-}
+}}
 
-void Player::update(list<Box*> boxes) {
+void Player::update(list<Box*> boxes, list<Platform*> platforms) {
+	php = durability;
 	move();
 	fire();
-	platform(boxes);
-	update_animations();
-    animate();
-	update_bullets();
+	platform(boxes, platforms);
 	clear_inactive_bullets();
+	update_bullets();
+	update_animations();
+	animate();
 }
 
-void Player::platform(list<Box*> boxes) {
+void Player::platform(list<Box*> boxes, list <Platform*> platforms) {
 	for (Box* b : boxes)
 		if (b->collides(this)) {
 			if (py + hh < b->py) {
 				landed = true;
 				y = b->py - hh - 1;
+				return;
 			}
-		else if (px + hw < b->px) x = b->px - hw - 1;
-		else if (px > b->x + b->hw) x = b->x + b->hw + 1;
-		else if (py > b->y + b->hh) { y = b->y + b->hh + 1; yspeed = 0; }
-	    break;
+		else if (px + hw < b->px) x = b->x - hw - 1;
+		else if (px > b->px + b->hw) x = b->x + b->hw + 1;
+		else if (py > b->py + b->hh) { y = b->y + b->hh + 1; yspeed = 0; }
 		}
 		else landed = false;
+
+	//moving platform collision
+	for (Platform* p : platforms)
+		for (Box* b : p->platform)
+			if (b->collides(this)) {
+				if (py + hh < b->py) {
+					landed = true;
+					y = b->py - hh - 1;
+					x += b->xspeed;
+					mpos += b->xspeed;
+				}
+				else if (px + hw < b->px) x = b->x - hw - 1;
+				else if (px > b->px + b->hw) x = b->x + b->hw + 1;
+				else if (py > b->py + b->hh) { y = b->y + b->hh + 1; yspeed = 0; }
+				return;
+			}
+			else landed = false;
+
 }
 
-
 void Player::fire() {
-	if (shooting) bullets.add(new Bullet("VBullet.bmp", x + (facing_right ? w : 0), y + 10, 6, 6, PSPEED* 1.7 *(facing_right ? 1 : -1), 0));
+	if (shooting) bullets.add(new Bullet("VBullet.bmp", x + (facing_right ? w : 0), py + 10, 6, 6, PSPEED* 1.7 *(facing_right ? 1 : -1), 0));
 
 }
 

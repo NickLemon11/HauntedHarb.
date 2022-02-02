@@ -13,6 +13,18 @@ void Combat::update_bullets() {
 }									
 									
 void Combat::clear_inactive_bullets() {
-	for (Bullet* b : bullets) if (!b->active) { bullets.remove(b); break; }
-}									
-									
+	for (Bullet* b : bullets) 
+		if (!b->active) {
+			bullets.remove(b);
+			break;
+	}
+}						
+
+void Combat::bullet_collision(Drawable* d) {
+	for (Bullet* b : bullets) if (b->collides(d)) {
+		b->active = false;
+		d->durability--;
+		break;
+	}
+}
+									  
